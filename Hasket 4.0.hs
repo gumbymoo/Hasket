@@ -92,11 +92,11 @@ eval (exp,env)
   | (head exp) /= '(' && (head exp) /= '[' = (getVariableValue env expHead) >>= (\x -> Right (x, env))
   | firstItem == "define" = executeDefinition env exp
   | firstItem == "if" = executeIf env exp
-  | firstItem == "lambda" = Right (makeFunction exp env,env)
+  | firstItem == "lambda" = Right (exp,env)
   | primitive firstItem = executePrimitive env firstItem $ tail $ getExps $ chopParentheses exp
   | otherwise = let pieces = getExps $ chopParentheses exp
                     args = tail pieces
-                in applyFunction2 env (eval ((head pieces),env)) args
+                in applyFunction env (eval ((head pieces),env)) args
   where subExps = words exp
         expHead = head subExps
         firstItem = tail expHead
@@ -172,7 +172,7 @@ executeFunctionDefinition :: Environment -> [String] -> Evaluated
 executeFunctionDefinition env items = result
   where args = words $ chopParentheses $ items !! 1
         lambda = "(lambda (" ++ (unwords $ tail args) ++ ") " ++ (unWords $ drop 2 items) ++ ")"
-        result = addBinding env (head args) $ makeFunction lambda env
+        result = addBinding env (head args) $ lambda
 
 booleanMaker :: String -> Bool
 booleanMaker str
